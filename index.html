@@ -16,9 +16,6 @@
         .btn-reset { background-color: #ff3b30; }
         .btn-reset:active { background-color: #d70015; }
         
-        .btn-rules { background-color: #34c759; }
-        .btn-rules:active { background-color: #248a3d; }
-        
         .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 15px auto; max-width: 320px; display: none; }
         .card h2 { margin-top: 0; font-size: 22px; color: #222; margin-bottom: 15px; }
         
@@ -29,10 +26,6 @@
         .nav-btn { flex: 1; background: #e5e5ea; color: #007aff; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .nav-btn:active { background: #d1d1d6; }
         .nav-btn:disabled { color: #a1a1a6; background: #f2f2f7; cursor: not-allowed; }
-
-        .rules-text { text-align: left; font-size: 15px; color: #333; line-height: 1.5; }
-        .rules-text ul { padding-left: 20px; margin-top: 10px; }
-        .rules-text li { margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -41,7 +34,6 @@
     <div class="stats">Сгенерировано раундов: <span id="roundCount">0</span> / 3</div>
 
     <button class="btn" id="btnGen">Сгенерировать раунд</button>
-    <!--  <button class="btn btn-rules" id="btnRules">Инструкция</button> -->
     <button class="btn btn-reset" id="btnRes">Сбросить матч</button>
 
     <!-- Карточка с отрисовкой поля и навигацией -->
@@ -55,39 +47,21 @@
         </div>
     </div>
 
-    <!-- Карточка с инструкцией -->
-    <div class="card" id="rulesCard">
-        <h2>Инструкция</h2>
-        <div class="rules-text">
-            <ul>
-                <li>Матч состоит из <strong>3 раундов</strong>.</li>
-                <li>Нажмите «Сгенерировать раунд», чтобы получить случайную позицию.</li>
-                <li>Сгенерированные раунды <strong>не повторяются</strong>, вы можете переключаться между ними кнопками «Вперед/Назад».</li>
-                <li><strong>Красная точка</strong> — центр ринга.</li>
-                <li><strong>Стрелки на роботах</strong> указывают направление их лицевой части.</li>
-            </ul>
-        </div>
-        <button class="btn" id="btnCloseRules" style="margin-top: 15px; width: 100%;">Понятно</button>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var btnGen = document.getElementById('btnGen');
             var btnRes = document.getElementById('btnRes');
-            var btnRules = document.getElementById('btnRules');
-            var btnCloseRules = document.getElementById('btnCloseRules');
             var btnPrev = document.getElementById('btnPrev');
             var btnNext = document.getElementById('btnNext');
             
             var roundCount = document.getElementById('roundCount');
             var renderCard = document.getElementById('renderCard');
-            var rulesCard = document.getElementById('rulesCard');
             var cardTitle = document.getElementById('cardTitle');
             var svgBox = document.getElementById('svgBox');
 
             var available = [0, 1, 2, 3];
-            var historyData = []; // хранит ID сгенерированных расстановок
-            var currentIndex = -1; // текущий отображаемый раунд
+            var historyData = []; 
+            var currentIndex = -1; 
 
             var svgs = [
                 '<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="10"/><rect x="20" y="40" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="50" cy="60" r="3" fill="black"/><path d="M 50 60 L 30 60 L 35 55 M 30 60 L 35 65" fill="none" stroke="black" stroke-width="2"/><path d="M 100 40 L 100 120" stroke="red" stroke-width="2"/><rect x="140" y="120" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="150" cy="140" r="3" fill="black"/><path d="M 150 140 L 170 140 L 165 135 M 170 140 L 165 145" fill="none" stroke="black" stroke-width="2"/><path d="M 140 160 L 140 80" stroke="red" stroke-width="2"/><circle cx="100" cy="100" r="2" fill="red"/></svg>',
@@ -96,7 +70,6 @@
                 '<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="10"/><rect x="40" y="80" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="60" cy="110" r="3" fill="black"/><path d="M 60 110 L 60 90 L 55 95 M 60 90 L 65 95" fill="none" stroke="black" stroke-width="2"/><path d="M 80 80 L 80 120" stroke="red" stroke-width="2"/><rect x="120" y="80" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="140" cy="90" r="3" fill="black"/><path d="M 140 90 L 140 110 L 135 105 M 140 110 L 145 105" fill="none" stroke="black" stroke-width="2"/><path d="M 120 80 L 120 120" stroke="red" stroke-width="2"/><circle cx="100" cy="100" r="2" fill="red"/></svg>'
             ];
 
-            // Функция обновления карточки на экране
             function updateView() {
                 if (historyData.length === 0) {
                     renderCard.style.display = 'none';
@@ -107,30 +80,14 @@
                 cardTitle.innerText = 'Раунд ' + (currentIndex + 1);
                 svgBox.innerHTML = svgs[historyData[currentIndex]];
 
-                // Блокируем/разблокируем кнопки навигации
                 btnPrev.disabled = (currentIndex === 0);
                 btnNext.disabled = (currentIndex === historyData.length - 1);
                 
                 roundCount.innerText = historyData.length;
             }
 
-            // Инструкция
-            btnRules.addEventListener('click', function(e) {
-                e.preventDefault();
-                renderCard.style.display = 'none';
-                rulesCard.style.display = 'block';
-            });
-            
-            btnCloseRules.addEventListener('click', function(e) {
-                e.preventDefault();
-                rulesCard.style.display = 'none';
-                if(historyData.length > 0) updateView();
-            });
-
-            // Генерация нового раунда
             btnGen.addEventListener('click', function(e) {
                 e.preventDefault(); 
-                rulesCard.style.display = 'none';
                 
                 if (historyData.length >= 3) {
                     alert('Все 3 раунда уже сгенерированы! Используйте кнопки «Вперед» и «Назад» для просмотра или сбросьте матч.');
@@ -142,18 +99,16 @@
                 available.splice(randIdx, 1);
                 
                 historyData.push(layoutId);
-                currentIndex = historyData.length - 1; // переключаемся на свежий раунд
+                currentIndex = historyData.length - 1; 
                 
                 updateView();
 
-                // Если сгенерировали 3, визуально отключаем главную кнопку
                 if (historyData.length === 3) {
                     btnGen.disabled = true;
                     btnGen.innerText = "Матч сформирован (3 из 3)";
                 }
             });
 
-            // Навигация: Назад
             btnPrev.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (currentIndex > 0) {
@@ -162,7 +117,6 @@
                 }
             });
 
-            // Навигация: Вперед
             btnNext.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (currentIndex < historyData.length - 1) {
@@ -171,7 +125,6 @@
                 }
             });
 
-            // Сброс матча
             btnRes.addEventListener('click', function(e) {
                 e.preventDefault();
                 available = [0, 1, 2, 3];
@@ -182,7 +135,6 @@
                 btnGen.innerText = "Сгенерировать раунд";
                 roundCount.innerText = "0";
                 
-                rulesCard.style.display = 'none';
                 updateView();
             });
         });
