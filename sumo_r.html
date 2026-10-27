@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Рандомайзер Сумо</title>
+    <style>
+        /* Базовые стили для мобильных устройств */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            text-center;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+            background-color: #fafafa;
+            border-bottom: 1px solid #eee;
+        }
+
+        @media (min-width: 600px) {
+            .controls {
+                flex-direction: row;
+            }
+        }
+
+        button {
+            flex: 1;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            color: #fff;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #ccc !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #btn-generate {
+            background-color: #007aff;
+        }
+
+        #btn-reset {
+            background-color: #ff3b30;
+        }
+
+        .status {
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status span {
+            font-weight: bold;
+        }
+
+        .rounds-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        @media (min-width: 600px) {
+            .rounds-container {
+                flex-direction: row;
+                justify-content: center;
+                align-items: flex-start;
+            }
+        }
+
+        .round-card {
+            background: #fff;
+            border: 2px solid #eaeaea;
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            flex: 1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .round-badge {
+            display: inline-block;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .svg-container {
+            width: 100%;
+            max-width: 220px;
+            margin: 0 auto;
+        }
+
+        .svg-container svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .round-name {
+            margin-top: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+            padding: 40px 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Рандомайзер Сумо</h1>
+            <p>Генерация уникальных расстановок на 3 раунда</p>
+        </div>
+
+        <div class="controls">
+            <button id="btn-generate">Сгенерировать раунд</button>
+            <button id="btn-reset">Сбросить матч</button>
+        </div>
+
+        <div class="status">
+            Раундов сыграно: <span id="round-counter">0</span> / 3
+        </div>
+
+        <div id="rounds-container" class="rounds-container">
+            <div id="placeholder" class="placeholder-text">
+                Нажмите «Сгенерировать раунд», чтобы начать матч
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функция для отрисовки робота (квадрат + стрелка направления)
+        function createRobot(x, y, dir) {
+            const cx = x + 20;
+            const cy = y + 20;
+            let arrow = '';
+
+            if (dir === 'right') {
+                arrow = `
+                    <line x1="${cx-10}" y1="${cy}" x2="${cx+10}" y2="${cy}" stroke="black" stroke-width="2"/>
+                    <circle cx="${cx-10}" cy="${cy}" r="2" fill="black"/>
+                    <polygon points="${cx+10},${cy} ${cx+5},${cy-5} ${cx+5},${cy+5}" fill="white" stroke="black" stroke-width="1"/>
+                `;
+            } else if (dir === 'left') {
+                arrow = `
+                    <line x1="${cx+10}" y1="${cy}" x2="${cx-10}" y2="${cy}" stroke="black" stroke-width="2"/>
+                    <circle cx="${cx+10}" cy="${cy}" r="2" fill="black"/>
+                    <polygon points="${cx-10},${cy} ${cx-5},${cy-5} ${cx-5},${cy+5}" fill="white" stroke="black" stroke-width="1"/>
+                `;
+            } else if (dir === 'up') {
+                arrow = `
+                    <line x1="${cx}" y1="${cy+10}" x2="${cx}" y2="${cy-10}" stroke="black" stroke-width="2"/>
+                    <circle cx="${cx}" cy="${cy+10}" r="2" fill="black"/>
+                    <polygon points="${cx},${cy-10} ${cx-5},${cy-5} ${cx+5},${cy-5}" fill="white" stroke="black" stroke-width="1"/>
+                `;
+            } else if (dir === 'down') {
+                arrow = `
+                    <line x1="${cx}" y1="${cy-10}" x2="${cx}" y2="${cy+10}" stroke="black" stroke-width="2"/>
+                    <circle cx="${cx}" cy="${cy-10}" r="2" fill="black"/>
+                    <polygon points="${cx},${cy+10} ${cx-5},${cy+5} ${cx+5},${cy+5}" fill="white" stroke="black" stroke-width="1"/>
+                `;
+            }
+
+            return `
+                <rect x="${x}" y="${y}" width="40" height="40" fill="#00bfff" stroke="#ff4500" stroke-width="2"/>
+                ${arrow}
+            `;
+        }
+
+        // Общая обертка ринга
+        function wrapSVG(content) {
+            return `
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="200" fill="white" />
+                    <circle cx="100" cy="100" r="95" fill="none" stroke="black" stroke-width="5" />
+                    <circle cx="100" cy="100" r="2" fill="red" />
+                    ${content}
+                </svg>
+            `;
+        }
+
+        // 4 возможных позиции согласно логике
+        const positions = [
+            {
+                name: "По диагонали",
+                // Pos 1: Top-left facing right, Bottom-right facing right.
+                svg: wrapSVG(createRobot(30, 40, 'right') + createRobot(130, 120, 'right'))
+            },
+            {
+                name: "Сверху",
+                // Pos 2: Top-left facing right, Top-right facing left.
+                svg: wrapSVG(createRobot(30, 40, 'right') + createRobot(130, 40, 'left'))
+            },
+            {
+                name: "По центру (горизонтально)",
+                // Pos 3: Middle-left facing right, Middle-right facing left.
+                svg: wrapSVG(createRobot(30, 80, 'right') + createRobot(130, 80, 'left'))
+            },
+            {
+                name: "По центру (вертикально)",
+                // Pos 4: Middle-left facing up, Middle-right facing down.
+                svg: wrapSVG(createRobot(30, 80, 'up') + createRobot(130, 80, 'down'))
+            }
+        ];
+
+        // Состояние приложения
+        let availablePool = [0, 1, 2, 3];
+        let roundsPlayed = 0;
+
+        // Элементы DOM
+        const btnGenerate = document.getElementById('btn-generate');
+        const btnReset = document.getElementById('btn-reset');
+        const counterSpan = document.getElementById('round-counter');
+        const container = document.getElementById('rounds-container');
+
+        // Логика генерации
+        btnGenerate.addEventListener('click', function() {
+            if (roundsPlayed >= 3) return;
+
+            // Выбираем случайный индекс из пула
+            const randomIndex = Math.floor(Math.random() * availablePool.length);
+            const positionIndex = availablePool[randomIndex];
+            
+            // Удаляем выбранную позицию из пула, чтобы не повторялась
+            availablePool.splice(randomIndex, 1);
+            roundsPlayed++;
+
+            // Если это первый раунд, убираем плейсхолдер
+            if (roundsPlayed === 1) {
+                container.innerHTML = '';
+            }
+
+            const posData = positions[positionIndex];
+
+            // Создаем карточку раунда
+            const card = document.createElement('div');
+            card.className = 'round-card';
+            card.innerHTML = `
+                <div class="round-badge">Раунд ${roundsPlayed}</div>
+                <div class="svg-container">
+                    ${posData.svg}
+                </div>
+                <div class="round-name">${posData.name}</div>
+            `;
+            
+            container.appendChild(card);
+            counterSpan.textContent = roundsPlayed;
+
+            // Блокируем кнопку, если сыграно 3 раунда
+            if (roundsPlayed >= 3) {
+                btnGenerate.disabled = true;
+            }
+        });
+
+        // Логика сброса
+        btnReset.addEventListener('click', function() {
+            availablePool = [0, 1, 2, 3];
+            roundsPlayed = 0;
+            counterSpan.textContent = roundsPlayed;
+            btnGenerate.disabled = false;
+            
+            container.innerHTML = `
+                <div id="placeholder" class="placeholder-text">
+                    Нажмите «Сгенерировать раунд», чтобы начать матч
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
