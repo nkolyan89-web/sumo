@@ -2,337 +2,189 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Рандомайзер Сумо</title>
     <style>
-        /* Базовые стили для мобильных устройств */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { font-family: -apple-system, sans-serif; text-align: center; background-color: #f4f4f9; padding: 20px; margin: 0; }
+        h1 { font-size: 26px; color: #333; margin-bottom: 5px; }
+        .stats { font-size: 16px; margin-bottom: 20px; color: #666; font-weight: 500; }
+        
+        .btn { background-color: #007aff; color: white; border: none; padding: 14px 20px; font-size: 16px; border-radius: 12px; margin: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; font-weight: bold; width: 90%; max-width: 320px; }
+        .btn:active { background-color: #005bb5; }
+        .btn:disabled { background-color: #a0cbf7; cursor: not-allowed; }
+        
+        .btn-reset { background-color: #ff3b30; }
+        .btn-reset:active { background-color: #d70015; }
+        
+        .btn-rules { background-color: #34c759; }
+        .btn-rules:active { background-color: #248a3d; }
+        
+        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 15px auto; max-width: 320px; display: none; }
+        .card h2 { margin-top: 0; font-size: 22px; color: #222; margin-bottom: 15px; }
+        
+        svg { width: 100%; max-width: 250px; height: auto; display: block; margin: 0 auto; }
+        
+        /* Кнопки навигации внутри карточки */
+        .nav-controls { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+        .nav-btn { flex: 1; background: #e5e5ea; color: #007aff; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .nav-btn:active { background: #d1d1d6; }
+        .nav-btn:disabled { color: #a1a1a6; background: #f2f2f7; cursor: not-allowed; }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-        }
-
-        .header {
-            background-color: #1a1a1a;
-            color: #fff;
-            padding: 20px;
-            text-center;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .header p {
-            margin: 5px 0 0 0;
-            color: #aaa;
-            font-size: 14px;
-        }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 20px;
-            background-color: #fafafa;
-            border-bottom: 1px solid #eee;
-        }
-
-        @media (min-width: 600px) {
-            .controls {
-                flex-direction: row;
-            }
-        }
-
-        button {
-            flex: 1;
-            padding: 16px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-            color: #fff;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        button:disabled {
-            background-color: #ccc !important;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        #btn-generate {
-            background-color: #007aff;
-        }
-
-        #btn-reset {
-            background-color: #ff3b30;
-        }
-
-        .status {
-            padding: 15px 20px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 500;
-            border-bottom: 1px solid #eee;
-        }
-
-        .status span {
-            font-weight: bold;
-        }
-
-        .rounds-container {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            flex-grow: 1;
-        }
-
-        @media (min-width: 600px) {
-            .rounds-container {
-                flex-direction: row;
-                justify-content: center;
-                align-items: flex-start;
-            }
-        }
-
-        .round-card {
-            background: #fff;
-            border: 2px solid #eaeaea;
-            border-radius: 16px;
-            padding: 15px;
-            text-align: center;
-            flex: 1;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .round-badge {
-            display: inline-block;
-            background-color: #e3f2fd;
-            color: #1976d2;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-
-        .svg-container {
-            width: 100%;
-            max-width: 220px;
-            margin: 0 auto;
-        }
-
-        .svg-container svg {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .round-name {
-            margin-top: 10px;
-            font-size: 15px;
-            font-weight: bold;
-            color: #444;
-        }
-
-        .placeholder-text {
-            text-align: center;
-            color: #999;
-            font-size: 16px;
-            padding: 40px 20px;
-            width: 100%;
-        }
+        .rules-text { text-align: left; font-size: 15px; color: #333; line-height: 1.5; }
+        .rules-text ul { padding-left: 20px; margin-top: 10px; }
+        .rules-text li { margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1>Рандомайзер Сумо</h1>
-            <p>Генерация уникальных расстановок на 3 раунда</p>
-        </div>
+    <h1>Рандомайзер Сумо</h1>
+    <div class="stats">Сгенерировано раундов: <span id="roundCount">0</span> / 3</div>
 
-        <div class="controls">
-            <button id="btn-generate">Сгенерировать раунд</button>
-            <button id="btn-reset">Сбросить матч</button>
-        </div>
+    <button class="btn" id="btnGen">Сгенерировать раунд</button>
+    <button class="btn btn-rules" id="btnRules">Инструкция</button>
+    <button class="btn btn-reset" id="btnRes">Сбросить матч</button>
 
-        <div class="status">
-            Раундов сыграно: <span id="round-counter">0</span> / 3
-        </div>
-
-        <div id="rounds-container" class="rounds-container">
-            <div id="placeholder" class="placeholder-text">
-                Нажмите «Сгенерировать раунд», чтобы начать матч
-            </div>
+    <!-- Карточка с отрисовкой поля и навигацией -->
+    <div class="card" id="renderCard">
+        <h2 id="cardTitle">Раунд 1</h2>
+        <div id="svgBox"></div>
+        
+        <div class="nav-controls">
+            <button class="nav-btn" id="btnPrev">◄ Назад</button>
+            <button class="nav-btn" id="btnNext">Вперед ►</button>
         </div>
     </div>
 
+    <!-- Карточка с инструкцией -->
+    <div class="card" id="rulesCard">
+        <h2>Инструкция</h2>
+        <div class="rules-text">
+            <ul>
+                <li>Матч состоит из <strong>3 раундов</strong>.</li>
+                <li>Нажмите «Сгенерировать раунд», чтобы получить случайную позицию.</li>
+                <li>Сгенерированные раунды <strong>не повторяются</strong>, вы можете переключаться между ними кнопками «Вперед/Назад».</li>
+                <li><strong>Красная точка</strong> — центр ринга.</li>
+                <li><strong>Стрелки на роботах</strong> указывают направление их лицевой части.</li>
+            </ul>
+        </div>
+        <button class="btn" id="btnCloseRules" style="margin-top: 15px; width: 100%;">Понятно</button>
+    </div>
+
     <script>
-        // Функция для отрисовки робота (квадрат + стрелка направления)
-        function createRobot(x, y, dir) {
-            const cx = x + 20;
-            const cy = y + 20;
-            let arrow = '';
-
-            if (dir === 'right') {
-                arrow = `
-                    <line x1="${cx-10}" y1="${cy}" x2="${cx+10}" y2="${cy}" stroke="black" stroke-width="2"/>
-                    <circle cx="${cx-10}" cy="${cy}" r="2" fill="black"/>
-                    <polygon points="${cx+10},${cy} ${cx+5},${cy-5} ${cx+5},${cy+5}" fill="white" stroke="black" stroke-width="1"/>
-                `;
-            } else if (dir === 'left') {
-                arrow = `
-                    <line x1="${cx+10}" y1="${cy}" x2="${cx-10}" y2="${cy}" stroke="black" stroke-width="2"/>
-                    <circle cx="${cx+10}" cy="${cy}" r="2" fill="black"/>
-                    <polygon points="${cx-10},${cy} ${cx-5},${cy-5} ${cx-5},${cy+5}" fill="white" stroke="black" stroke-width="1"/>
-                `;
-            } else if (dir === 'up') {
-                arrow = `
-                    <line x1="${cx}" y1="${cy+10}" x2="${cx}" y2="${cy-10}" stroke="black" stroke-width="2"/>
-                    <circle cx="${cx}" cy="${cy+10}" r="2" fill="black"/>
-                    <polygon points="${cx},${cy-10} ${cx-5},${cy-5} ${cx+5},${cy-5}" fill="white" stroke="black" stroke-width="1"/>
-                `;
-            } else if (dir === 'down') {
-                arrow = `
-                    <line x1="${cx}" y1="${cy-10}" x2="${cx}" y2="${cy+10}" stroke="black" stroke-width="2"/>
-                    <circle cx="${cx}" cy="${cy-10}" r="2" fill="black"/>
-                    <polygon points="${cx},${cy+10} ${cx-5},${cy+5} ${cx+5},${cy+5}" fill="white" stroke="black" stroke-width="1"/>
-                `;
-            }
-
-            return `
-                <rect x="${x}" y="${y}" width="40" height="40" fill="#00bfff" stroke="#ff4500" stroke-width="2"/>
-                ${arrow}
-            `;
-        }
-
-        // Общая обертка ринга
-        function wrapSVG(content) {
-            return `
-                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="200" height="200" fill="white" />
-                    <circle cx="100" cy="100" r="95" fill="none" stroke="black" stroke-width="5" />
-                    <circle cx="100" cy="100" r="2" fill="red" />
-                    ${content}
-                </svg>
-            `;
-        }
-
-        // 4 возможных позиции согласно логике
-        const positions = [
-            {
-                name: "По диагонали",
-                // Pos 1: Top-left facing right, Bottom-right facing right.
-                svg: wrapSVG(createRobot(30, 40, 'right') + createRobot(130, 120, 'right'))
-            },
-            {
-                name: "Сверху",
-                // Pos 2: Top-left facing right, Top-right facing left.
-                svg: wrapSVG(createRobot(30, 40, 'right') + createRobot(130, 40, 'left'))
-            },
-            {
-                name: "По центру (горизонтально)",
-                // Pos 3: Middle-left facing right, Middle-right facing left.
-                svg: wrapSVG(createRobot(30, 80, 'right') + createRobot(130, 80, 'left'))
-            },
-            {
-                name: "По центру (вертикально)",
-                // Pos 4: Middle-left facing up, Middle-right facing down.
-                svg: wrapSVG(createRobot(30, 80, 'up') + createRobot(130, 80, 'down'))
-            }
-        ];
-
-        // Состояние приложения
-        let availablePool = [0, 1, 2, 3];
-        let roundsPlayed = 0;
-
-        // Элементы DOM
-        const btnGenerate = document.getElementById('btn-generate');
-        const btnReset = document.getElementById('btn-reset');
-        const counterSpan = document.getElementById('round-counter');
-        const container = document.getElementById('rounds-container');
-
-        // Логика генерации
-        btnGenerate.addEventListener('click', function() {
-            if (roundsPlayed >= 3) return;
-
-            // Выбираем случайный индекс из пула
-            const randomIndex = Math.floor(Math.random() * availablePool.length);
-            const positionIndex = availablePool[randomIndex];
+        document.addEventListener('DOMContentLoaded', function() {
+            var btnGen = document.getElementById('btnGen');
+            var btnRes = document.getElementById('btnRes');
+            var btnRules = document.getElementById('btnRules');
+            var btnCloseRules = document.getElementById('btnCloseRules');
+            var btnPrev = document.getElementById('btnPrev');
+            var btnNext = document.getElementById('btnNext');
             
-            // Удаляем выбранную позицию из пула, чтобы не повторялась
-            availablePool.splice(randomIndex, 1);
-            roundsPlayed++;
+            var roundCount = document.getElementById('roundCount');
+            var renderCard = document.getElementById('renderCard');
+            var rulesCard = document.getElementById('rulesCard');
+            var cardTitle = document.getElementById('cardTitle');
+            var svgBox = document.getElementById('svgBox');
 
-            // Если это первый раунд, убираем плейсхолдер
-            if (roundsPlayed === 1) {
-                container.innerHTML = '';
+            var available = [0, 1, 2, 3];
+            var historyData = []; // хранит ID сгенерированных расстановок
+            var currentIndex = -1; // текущий отображаемый раунд
+
+            var svgs = [
+                '<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="10"/><rect x="20" y="40" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="50" cy="60" r="3" fill="black"/><path d="M 50 60 L 30 60 L 35 55 M 30 60 L 35 65" fill="none" stroke="black" stroke-width="2"/><path d="M 100 40 L 100 120" stroke="red" stroke-width="2"/><rect x="140" y="120" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="150" cy="140" r="3" fill="black"/><path d="M 150 140 L 170 140 L 165 135 M 170 140 L 165 145" fill="none" stroke="black" stroke-width="2"/><path d="M 140 160 L 140 80" stroke="red" stroke-width="2"/><circle cx="100" cy="100" r="2" fill="red"/></svg>',
+                '<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="10"/><rect x="30" y="40" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="60" cy="60" r="3" fill="black"/><path d="M 60 60 L 40 60 L 45 55 M 40 60 L 45 65" fill="none" stroke="black" stroke-width="2"/><path d="M 70 80 L 70 120" stroke="red" stroke-width="2"/><rect x="130" y="40" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="140" cy="60" r="3" fill="black"/><path d="M 140 60 L 160 60 L 155 55 M 160 60 L 155 65" fill="none" stroke="black" stroke-width="2"/><path d="M 130 80 L 130 120" stroke="red" stroke-width="2"/><circle cx="100" cy="100" r="2" fill="red"/></svg>',
+                '<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="10"/><rect x="30" y="80" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="60" cy="100" r="3" fill="black"/><path d="M 60 100 L 40 100 L 45 95 M 40 100 L 45 105" fill="none" stroke="black" stroke-width="2"/><path d="M 70 80 L 70 120" stroke="red" stroke-width="2"/><rect x="130" y="80" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="140" cy="100" r="3" fill="black"/><path d="M 140 100 L 160 100 L 155 95 M 160 100 L 155 105" fill="none" stroke="black" stroke-width="2"/><path d="M 130 80 L 130 120" stroke="red" stroke-width="2"/><circle cx="100" cy="100" r="2" fill="red"/></svg>',
+                '<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="10"/><rect x="40" y="80" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="60" cy="110" r="3" fill="black"/><path d="M 60 110 L 60 90 L 55 95 M 60 90 L 65 95" fill="none" stroke="black" stroke-width="2"/><path d="M 80 80 L 80 120" stroke="red" stroke-width="2"/><rect x="120" y="80" width="40" height="40" fill="#00d2ff" stroke="#ff4500" stroke-width="2"/><circle cx="140" cy="90" r="3" fill="black"/><path d="M 140 90 L 140 110 L 135 105 M 140 110 L 145 105" fill="none" stroke="black" stroke-width="2"/><path d="M 120 80 L 120 120" stroke="red" stroke-width="2"/><circle cx="100" cy="100" r="2" fill="red"/></svg>'
+            ];
+
+            // Функция обновления карточки на экране
+            function updateView() {
+                if (historyData.length === 0) {
+                    renderCard.style.display = 'none';
+                    return;
+                }
+                
+                renderCard.style.display = 'block';
+                cardTitle.innerText = 'Раунд ' + (currentIndex + 1);
+                svgBox.innerHTML = svgs[historyData[currentIndex]];
+
+                // Блокируем/разблокируем кнопки навигации
+                btnPrev.disabled = (currentIndex === 0);
+                btnNext.disabled = (currentIndex === historyData.length - 1);
+                
+                roundCount.innerText = historyData.length;
             }
 
-            const posData = positions[positionIndex];
-
-            // Создаем карточку раунда
-            const card = document.createElement('div');
-            card.className = 'round-card';
-            card.innerHTML = `
-                <div class="round-badge">Раунд ${roundsPlayed}</div>
-                <div class="svg-container">
-                    ${posData.svg}
-                </div>
-                <div class="round-name">${posData.name}</div>
-            `;
+            // Инструкция
+            btnRules.addEventListener('click', function(e) {
+                e.preventDefault();
+                renderCard.style.display = 'none';
+                rulesCard.style.display = 'block';
+            });
             
-            container.appendChild(card);
-            counterSpan.textContent = roundsPlayed;
+            btnCloseRules.addEventListener('click', function(e) {
+                e.preventDefault();
+                rulesCard.style.display = 'none';
+                if(historyData.length > 0) updateView();
+            });
 
-            // Блокируем кнопку, если сыграно 3 раунда
-            if (roundsPlayed >= 3) {
-                btnGenerate.disabled = true;
-            }
-        });
+            // Генерация нового раунда
+            btnGen.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                rulesCard.style.display = 'none';
+                
+                if (historyData.length >= 3) {
+                    alert('Все 3 раунда уже сгенерированы! Используйте кнопки «Вперед» и «Назад» для просмотра или сбросьте матч.');
+                    return;
+                }
 
-        // Логика сброса
-        btnReset.addEventListener('click', function() {
-            availablePool = [0, 1, 2, 3];
-            roundsPlayed = 0;
-            counterSpan.textContent = roundsPlayed;
-            btnGenerate.disabled = false;
-            
-            container.innerHTML = `
-                <div id="placeholder" class="placeholder-text">
-                    Нажмите «Сгенерировать раунд», чтобы начать матч
-                </div>
-            `;
+                var randIdx = Math.floor(Math.random() * available.length);
+                var layoutId = available[randIdx];
+                available.splice(randIdx, 1);
+                
+                historyData.push(layoutId);
+                currentIndex = historyData.length - 1; // переключаемся на свежий раунд
+                
+                updateView();
+
+                // Если сгенерировали 3, визуально отключаем главную кнопку
+                if (historyData.length === 3) {
+                    btnGen.disabled = true;
+                    btnGen.innerText = "Матч сформирован (3 из 3)";
+                }
+            });
+
+            // Навигация: Назад
+            btnPrev.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateView();
+                }
+            });
+
+            // Навигация: Вперед
+            btnNext.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentIndex < historyData.length - 1) {
+                    currentIndex++;
+                    updateView();
+                }
+            });
+
+            // Сброс матча
+            btnRes.addEventListener('click', function(e) {
+                e.preventDefault();
+                available = [0, 1, 2, 3];
+                historyData = [];
+                currentIndex = -1;
+                
+                btnGen.disabled = false;
+                btnGen.innerText = "Сгенерировать раунд";
+                roundCount.innerText = "0";
+                
+                rulesCard.style.display = 'none';
+                updateView();
+            });
         });
     </script>
 </body>
